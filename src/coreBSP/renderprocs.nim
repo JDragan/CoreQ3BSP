@@ -81,28 +81,27 @@ proc renderFaces*(obj: RenderableObject) =
   var tid, lmid : GLuint
   let missinglm = lightmap_IDs[lightmap_IDs.high]
 
-  for f in 0 ..< obj.vertices.len:
-    if obj.vertices[f].len != 0:
+  for f in 0 ..< intpairs.len:
 
-      tid = textures_IDs[intpairs[f].a]
-      if intpairs[f].b >= 0:
-        lmid = lightmap_IDs[intpairs[f].b]
-      else:
-        lmid = missinglm
+    tid = textures_IDs[intpairs[f].a]
+    if intpairs[f].b >= 0:
+      lmid = lightmap_IDs[intpairs[f].b]
+    else:
+      lmid = missinglm
 
-      glActiveTexture(GL_TEXTURE0)
-      glBindTexture(GL_TEXTURE_2D, tid)
-      glActiveTexture(GL_TEXTURE1)
-      glBindTexture(GL_TEXTURE_2D, lmid)
+    glActiveTexture(GL_TEXTURE0)
+    glBindTexture(GL_TEXTURE_2D, tid)
+    glActiveTexture(GL_TEXTURE1)
+    glBindTexture(GL_TEXTURE_2D, lmid)
 
-      glBindBuffer(GL_ARRAY_BUFFER,obj.buffers[f].VBO)
-      glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, obj.buffers[f].EBO)
+    glBindBuffer(GL_ARRAY_BUFFER,obj.buffers[f].VBO)
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, obj.buffers[f].EBO)
 
-      glVertexAttribPointer(0, 3, cGL_FLOAT, false, 7 * sizeof(float32), cast[pointer](0))
-      glVertexAttribPointer(1, 2, cGL_FLOAT, false, 7 * sizeof(float32), cast[pointer](3 * sizeof(float32)))
-      glVertexAttribPointer(2, 2, cGL_FLOAT, false, 7 * sizeof(float32), cast[pointer](5 * sizeof(float32)))
+    glVertexAttribPointer(0, 3, cGL_FLOAT, false, 7 * sizeof(float32), cast[pointer](0))
+    glVertexAttribPointer(1, 2, cGL_FLOAT, false, 7 * sizeof(float32), cast[pointer](3 * sizeof(float32)))
+    glVertexAttribPointer(2, 2, cGL_FLOAT, false, 7 * sizeof(float32), cast[pointer](5 * sizeof(float32)))
 
-      glDrawElements(GL_TRIANGLES, obj.indices[f].len.GLsizei, GL_UNSIGNED_INT, cast[pointer](0))
+    glDrawElements(GL_TRIANGLES, obj.indices[f].len.GLsizei, GL_UNSIGNED_INT, cast[pointer](0))
 
 
 proc defaultGLsetup*() =
