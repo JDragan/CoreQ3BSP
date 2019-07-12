@@ -26,28 +26,25 @@ var PATCH : RenderableObject
 var textures : seq[string]
 
 
-proc CreateFace(f: int) =
+proc CreateFace(f: int, pos: int) =
 
   var face = bsp.faces[f]
   var indice_offset : uint32
-  var thepair = (face.textureID, face.lightmapID)
-  var pos = find(intpairs, thepair)
 
-  if pos != -1:
-    for v in 0 ..< face.numOfVerts:
-      var vertex = bsp.vertices[face.startVertIndex + v];
-      pushVertex(FACE.vertices, pos, vertex)
+  for v in 0 ..< face.numOfVerts:
+    var vertex = bsp.vertices[face.startVertIndex + v];
+    pushVertex(FACE.vertices, pos, vertex)
 
-    if FACE.indices[pos].len == 0:
-      indice_offset = 0
-    else:
-      indice_offset = max(FACE.indices[pos]) + 1
+  if FACE.indices[pos].len == 0:
+    indice_offset = 0
+  else:
+    indice_offset = max(FACE.indices[pos]) + 1
 
-    for j in 0 ..< face.numOfIndices:
-      FACE.indices[pos].add((cast[uint32](bsp.indices[j + face.startIndex]) + indice_offset))
+  for j in 0 ..< face.numOfIndices:
+    FACE.indices[pos].add((cast[uint32](bsp.indices[j + face.startIndex]) + indice_offset))
 
 
-proc CreatePatch(index: int) =
+proc CreatePatch(index: int, pos: int) =
 
   var face = bsp.faces[index]
   var patch : tBSPPatch
@@ -71,23 +68,23 @@ proc CreatePatch(index: int) =
   for bzpatch in patch.bezierpatches:
     var bp = Subdivide(bzpatch)
     var indice_offset : uint32
-    var thepair = (face.textureID, face.lightmapID)
-    var pos = find(intpairs, thepair)
 
-    if pos != -1:
-      for vertex in bp.patchVertices:
-        pushVertex(PATCH.vertices, pos, vertex)
+    for vertex in bp.patchVertices:
+      pushVertex(PATCH.vertices, pos, vertex)
 
-      if PATCH.indices[pos].len == 0:
-        indice_offset = 0
-      else:
-        indice_offset = max(PATCH.indices[pos]) + 1
+    if PATCH.indices[pos].len == 0:
+      indice_offset = 0
+    else:
+      indice_offset = max(PATCH.indices[pos]) + 1
 
-      for indice in bp.patchIndices:
-        PATCH.indices[pos].add(indice.uint32 + indice_offset)
+    for indice in bp.patchIndices:
+      PATCH.indices[pos].add(indice.uint32 + indice_offset)
 
 
 proc SortFaces() =
+
+
+
   # make pairs
   for f in 0 ..< bsp.faces.len:
     var face = bsp.faces[f]
@@ -97,7 +94,6 @@ proc SortFaces() =
 
     if pos == -1: intpairs.add(thepair)
 
-  echo "tPairs size: ", intpairs.len
   # set lengths
   FACE.vertices.setLen(intpairs.len)
   FACE.indices.setLen(intpairs.len)
@@ -108,13 +104,18 @@ proc SortFaces() =
   textures.setLen(bsp.textures.len)
   textures_IDs.setLen(bsp.textures.len)
   lightmap_IDs.setLen(bsp.lightmaps.len)
+  echo "tPairs size: ", intpairs.len
 
   # create faces
   for f in 0 ..< bsp.faces.len:
+    var face = bsp.faces[f]
+    var thepair = (face.textureID, face.lightmapID)
+    var pos = find(intpairs, thepair)
+
     if (bsp.faces[f].facetype != 2):
-      CreateFace(f)
+      CreateFace(f, pos.int)
     else:
-      CreatePatch(f)
+      CreatePatch(f, pos.int)
 
 
 SortFaces()
