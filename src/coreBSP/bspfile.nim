@@ -1,6 +1,7 @@
 import strutils
 import bspstruct
 import times
+import os
 
 proc readBSP*(filename: string): q3bspmap =
 
@@ -8,11 +9,21 @@ proc readBSP*(filename: string): q3bspmap =
   start = cpuTime()
 
   let f = open(filename)
+  var bsp: q3bspmap
+
+  # extract name from path
+  for b in filename.split({DirSep}):
+    if b.contains("."):
+      bsp.name = b.split(".")[0]
+      if bsp.name.contains("maps/"):
+        bsp.name = bsp.name.split("maps/")[1]
+
+  echo bsp.name
 
   var
     header: tBSPHeader
     lumps: array[kMaxLumps.int, tBSPLump]
-    bsp: q3bspmap
+
 
 
   discard f.readBuffer(header.addr, sizeof(tBSPHeader))

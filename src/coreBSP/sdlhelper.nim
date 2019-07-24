@@ -13,8 +13,12 @@ proc sdlinit*(screenWidth: cint, screenHeight: cint, name: string = "OpenGL Wind
 
   discard sdl2.init(INIT_EVERYTHING)
   # discard glSetAttribute(SDL_GL_MULTISAMPLESAMPLES, 16)
+  discard glSetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_COMPATIBILITY);
+  discard glSetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+  discard glSetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
   window = createWindow(name, 20, 40, screenWidth, screenHeight,
             SDL_WINDOW_OPENGL or SDL_WINDOW_RESIZABLE)
+  hideWindow(window)
   discard setRelativeMouseMode(true.Bool32)
   discard glCreateContext(window)
   discard glSetSwapInterval(0)
@@ -23,6 +27,9 @@ proc sdlinit*(screenWidth: cint, screenHeight: cint, name: string = "OpenGL Wind
   W = screenWidth
   H = screenHeight
   window
+
+proc SDLshowWindow*(win: WindowPtr) =
+  showWindow(win)
 
 var
   evt = sdl2.defaultEvent

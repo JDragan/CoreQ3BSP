@@ -1,4 +1,6 @@
 import opengl
+import q3shaderparser
+# import shaderhelper
 
 type
   Buffers* = object
@@ -36,18 +38,44 @@ template loadLightmaps*(lightmaps: untyped) =
     glGenerateMipmap(GL_TEXTURE_2D)
   lightmap_IDs.add(missingLM)
 
-template loadTextures*(textures: untyped) =
+template loadSkyTexture(mapname: string, idx : int) =
   let missingTEX = loadTextureWithMips(appDir&"/baseq3/textures/_engine/missing.png")
+  var skyblock = parseq3shader(mapname)
+  echo "SKYBLOCK: ", skyblock
+
+  if skyblock.len != 0:
+    for i in 0 ..< skyblock.len:
+      let path = (appDir / "baseq3" / skyblock[i])
+      echo "SKY texture: ", path
+      if existsFile(path & ".jpg"):
+        echo "OK"
+        textures_IDs[idx] = loadTextureWithMips(path & ".jpg")
+      else:
+        echo path, " [MISSING]"
+        textures_IDs[idx] = missingTEX
+  else:
+    echo " [SKYBLOCK EMPTY]"
+    textures_IDs[idx] = missingTEX
+
+template loadTextures*(mapname: string, textures: untyped) =
+  let missingTEX = loadTextureWithMips(appDir&"/baseq3/textures/_engine/missing.png")
+  let skyflags = [3124, 3092, 134193, 1044, 1076]
 
   for i in 0 ..< textures.len:
     let texturepath = textures[i].name.join.split({'\0'}).join() # remove null terminated chars
+    let textureflag = textures[i].flags
     let path = (appDir / "baseq3" / texturepath)
-    # echo path
+    # echo "tex: ", path
     if existsFile(path & ".jpg"):
       textures_IDs[i] = loadTextureWithMips(path & ".jpg")
     elif existsFile(path & ".tga"):
       textures_IDs[i] = loadTextureWithMips(path & ".tga")
-    else: textures_IDs[i] = missingTEX
+    else:
+      echo texturepath, " ", textureflag
+      if textureflag in skyflags:
+        loadSkyTexture(mapname, i)
+      else:
+        textures_IDs[i] = missingTEX
 
 template pushVertex*(container: var seq[seq[float32]], index: int, element: untyped) =
   container[index].add(element.vPosition[0])
@@ -82,7 +110,6 @@ proc renderFaces*(obj: RenderableObject) =
   let missinglm = lightmap_IDs[lightmap_IDs.high]
 
   for f in 0 ..< intpairs.len:
-
     tid = textures_IDs[intpairs[f].a]
     if intpairs[f].b >= 0:
       lmid = lightmap_IDs[intpairs[f].b]

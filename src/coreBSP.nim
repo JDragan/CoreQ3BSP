@@ -6,9 +6,9 @@ import coreBSP/[bspfile, q3patch, renderprocs, shaderhelper, sdlhelper]
 
 
 if paramCount() == 0:
-  quit("Please specify BSP map, e.g. maps/q3dm1.bsp")
+  quit("Please specify BSP map as parameter.\nExample: coreBSP.exe baseq3/maps/q3dm1.bsp")
 
-discard sdlinit(800, 600, "coreBSP : Nim")
+let mainWindow = sdlinit(800, 600, "coreBSP : Nim")
 
 
 let appDir = getAppDir()
@@ -23,8 +23,6 @@ var bsp = readBSP( paramStr(1) )
 
 var FACE : RenderableObject
 var PATCH : RenderableObject
-var textures : seq[string]
-
 
 proc CreateFace(f: int, pos: int) =
 
@@ -82,9 +80,6 @@ proc CreatePatch(index: int, pos: int) =
 
 
 proc SortFaces() =
-
-
-
   # make pairs
   for f in 0 ..< bsp.faces.len:
     var face = bsp.faces[f]
@@ -101,7 +96,6 @@ proc SortFaces() =
   PATCH.vertices.setLen(intpairs.len)
   PATCH.indices.setLen(intpairs.len)
   PATCH.buffers.setLen(intpairs.len)
-  textures.setLen(bsp.textures.len)
   textures_IDs.setLen(bsp.textures.len)
   lightmap_IDs.setLen(bsp.lightmaps.len)
   echo "tPairs size: ", intpairs.len
@@ -122,9 +116,10 @@ SortFaces()
 CreateBuffers(FACE)
 CreateBuffers(PATCH)
 loadLightmaps(bsp.lightmaps)
-loadTextures(bsp.textures)
+loadTextures(bsp.name, bsp.textures)
 
 defaultGLsetup()
+SDLshowWindow(mainWindow)
 
 while run:
   Update()

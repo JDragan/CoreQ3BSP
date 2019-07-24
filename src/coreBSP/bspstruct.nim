@@ -5,7 +5,7 @@ proc fseek*(f: File, offset: clong, whence: int): int {.importc: "fseek", header
 
 type eLumps* = enum
   kEntities,
-  kTextures, 
+  kTextures,
   kPlanes,
   kNodes,
   kLeafs,
@@ -69,3 +69,4 @@ type
     faces*: seq[tBSPFace]
     textures*: seq[tBSPTexture]
     lightmaps*: seq[tBSPLightmap]
+    name*: string
