@@ -1,7 +1,6 @@
 import strutils
 import bspstruct
 import times
-import os
 
 proc readBSP*(filename: string): q3bspmap =
 
@@ -11,14 +10,11 @@ proc readBSP*(filename: string): q3bspmap =
   let f = open(filename)
   var bsp: q3bspmap
 
-  # extract name from path
-  for b in filename.split({DirSep}):
-    if b.contains("."):
-      bsp.name = b.split(".")[0]
-      if bsp.name.contains("maps/"):
-        bsp.name = bsp.name.split("maps/")[1]
-
-  echo bsp.name
+  # extract the map name from path
+  var dirsep = '\\'
+  if filename.contains('/'): dirsep = '/'
+  bsp.name = filename.split(dirsep)[2].split(".")[0]
+  echo "Map name: ", bsp.name
 
   var
     header: tBSPHeader
@@ -43,8 +39,8 @@ proc readBSP*(filename: string): q3bspmap =
   bsp.lightmaps.setLen(num_lightmaps)
 
   echo header
-  echo "reading vertices"
-  discard fseek(f, lumps[kVertices.int].offset, 0)
+  echo "reading ", num_vertices, " vertices"
+  fseek(f, lumps[kVertices.int].offset, 0)
   for v in 0 ..< num_vertices:
     discard f.readBuffer(bsp.vertices[v].addr, sizeof(tBSPVertex))
 
@@ -54,29 +50,27 @@ proc readBSP*(filename: string): q3bspmap =
     bsp.vertices[i].vPosition.arr[2] = -temp
 
 
-  echo "reading indices"
-  discard fseek(f, lumps[kIndices.int].offset, 0)
+  echo "reading ", num_indices, " indices"
+  fseek(f, lumps[kIndices.int].offset, 0)
   for i in 0 ..< num_indices:
     discard f.readBuffer(bsp.indices[i].addr, sizeof(int32))
   # for i in indices: echo i
 
-  echo "reading faces"
-  discard fseek(f, lumps[kFaces.int].offset, 0)
+  echo "reading ", num_faces, " faces"
+  fseek(f, lumps[kFaces.int].offset, 0)
   for v in 0 ..< num_faces:
     discard f.readBuffer(bsp.faces[v].addr, sizeof(tBSPFace))
 
-  echo "reading textures"
-  discard fseek(f, lumps[kTextures.int].offset, 0)
+  echo "reading ", num_textures, " textures"
+  fseek(f, lumps[kTextures.int].offset, 0)
   for v in 0 ..< num_textures:
     discard f.readBuffer(bsp.textures[v].addr, sizeof(tBSPTexture))
 
   echo "reading ", num_lightmaps, " lightmaps"
-  discard fseek(f, lumps[kLightmaps.int].offset, 0)
+  fseek(f, lumps[kLightmaps.int].offset, 0)
   for v in 0 ..< num_lightmaps:
     discard f.readBuffer(bsp.lightmaps[v].addr, sizeof(tBSPLightmap))
 
   echo "reading ", filename, " took ", cpuTime() - start, "[s]"
 
   return bsp
-
-#  nim -d:release --opt:size --passl:"-s" c -r --parallelBuild:4 -o:coreBSP src\coreBSP.nim baseq3\maps\Level.bsp

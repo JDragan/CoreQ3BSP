@@ -1,7 +1,7 @@
 import glm
 
 
-proc fseek*(f: File, offset: clong, whence: int): int {.importc: "fseek", header: "<stdio.h>", tags: [].}
+proc fseek*(f: File, offset: clong, whence: int) {.importc: "fseek", header: "<stdio.h>", tags: [].}
 
 type eLumps* = enum
   kEntities,
