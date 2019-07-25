@@ -12,10 +12,15 @@ var W, H: cint
 proc sdlinit*(screenWidth: cint, screenHeight: cint, name: string = "OpenGL Window"): WindowPtr =
 
   discard sdl2.init(INIT_EVERYTHING)
-  # discard glSetAttribute(SDL_GL_MULTISAMPLESAMPLES, 16)
-  discard glSetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_COMPATIBILITY);
-  discard glSetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-  discard glSetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+  discard glSetAttribute( SDL_GL_DOUBLEBUFFER, 1 );
+  discard glSetAttribute( SDL_GL_ACCELERATED_VISUAL, 1 );
+  discard glSetAttribute( SDL_GL_RED_SIZE, 8 );
+  discard glSetAttribute( SDL_GL_GREEN_SIZE, 8 );
+  discard glSetAttribute( SDL_GL_BLUE_SIZE, 8 );
+  discard glSetAttribute( SDL_GL_ALPHA_SIZE, 8 );
+  discard glSetAttribute( SDL_GL_CONTEXT_MAJOR_VERSION, 3 );
+  discard glSetAttribute( SDL_GL_CONTEXT_MINOR_VERSION, 3 );
+  discard glSetAttribute( SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE );
   window = createWindow(name, 20, 40, screenWidth, screenHeight,
             SDL_WINDOW_OPENGL or SDL_WINDOW_RESIZABLE)
   hideWindow(window)

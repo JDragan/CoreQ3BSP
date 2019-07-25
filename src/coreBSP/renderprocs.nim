@@ -1,6 +1,6 @@
 import opengl
 import q3shaderparser
-# import shaderhelper
+
 
 type
   Buffers* = object
@@ -21,6 +21,7 @@ var textures_IDs*: seq[GLuint]
 var lightmap_IDs*:  seq[GLuint]
 var intpairs*: seq[IntPair]
 
+
 template loadLightmaps*(lightmaps: untyped) =
   var white : seq[float32] = @[0.5'f32, 0.5, 0.5]
   var checker : array[12, byte] = [255'u8, 255, 255, 0, 0, 0, 0, 0, 0, 255, 255, 255]
@@ -37,6 +38,7 @@ template loadLightmaps*(lightmaps: untyped) =
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB.GLint, 128, 128, 0, GL_RGB, GL_UNSIGNED_BYTE, addr lightmaps[lm].imageBits)
     glGenerateMipmap(GL_TEXTURE_2D)
   lightmap_IDs.add(missingLM)
+
 
 template loadSkyTexture(mapname: string, idx : int) =
   let missingTEX = loadTextureWithMips(appDir&"/baseq3/textures/_engine/missing.png")
@@ -56,6 +58,7 @@ template loadSkyTexture(mapname: string, idx : int) =
   else:
     echo " [SKYBLOCK EMPTY]"
     textures_IDs[idx] = missingTEX
+
 
 template loadTextures*(mapname: string, textures: untyped) =
   let missingTEX = loadTextureWithMips(appDir&"/baseq3/textures/_engine/missing.png")
@@ -77,6 +80,7 @@ template loadTextures*(mapname: string, textures: untyped) =
       else:
         textures_IDs[i] = missingTEX
 
+
 template pushVertex*(container: var seq[seq[float32]], index: int, element: untyped) =
   container[index].add(element.vPosition[0])
   container[index].add(element.vPosition[1])
@@ -88,13 +92,12 @@ template pushVertex*(container: var seq[seq[float32]], index: int, element: unty
 
 
 proc CreateBuffers*(obj: RenderableObject) =
-
-  glEnableVertexAttribArray(0)
-  glEnableVertexAttribArray(1)
-  glEnableVertexAttribArray(2)
-
   for f in 0 ..< obj.vertices.len:
     if obj.vertices[f].len != 0:
+
+      glGenVertexArrays(1 ,obj.buffers[f].VAO.unsafeAddr)
+      glBindVertexArray(obj.buffers[f].VAO)
+
       glGenBuffers(1, obj.buffers[f].VBO.unsafeAddr)
       glBindBuffer(GL_ARRAY_BUFFER, obj.buffers[f].VBO)
       glBufferData(GL_ARRAY_BUFFER, obj.vertices[f].len*sizeof(GLfloat), obj.vertices[f][0].unsafeAddr, GL_STATIC_DRAW)
@@ -105,11 +108,12 @@ proc CreateBuffers*(obj: RenderableObject) =
 
 
 proc renderFaces*(obj: RenderableObject) =
-
   var tid, lmid : GLuint
   let missinglm = lightmap_IDs[lightmap_IDs.high]
 
   for f in 0 ..< intpairs.len:
+    if obj.buffers[f].VAO == 0: continue
+
     tid = textures_IDs[intpairs[f].a]
     if intpairs[f].b >= 0:
       lmid = lightmap_IDs[intpairs[f].b]
@@ -127,6 +131,10 @@ proc renderFaces*(obj: RenderableObject) =
     glVertexAttribPointer(0, 3, cGL_FLOAT, false, 7 * sizeof(float32), cast[pointer](0))
     glVertexAttribPointer(1, 2, cGL_FLOAT, false, 7 * sizeof(float32), cast[pointer](3 * sizeof(float32)))
     glVertexAttribPointer(2, 2, cGL_FLOAT, false, 7 * sizeof(float32), cast[pointer](5 * sizeof(float32)))
+
+    glEnableVertexAttribArray(0)
+    glEnableVertexAttribArray(1)
+    glEnableVertexAttribArray(2)
 
     glDrawElements(GL_TRIANGLES, obj.indices[f].len.GLsizei, GL_UNSIGNED_INT, cast[pointer](0))
 
