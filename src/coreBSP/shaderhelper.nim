@@ -1,5 +1,6 @@
-import 
+import
     opengl,
+    glm,
     stb_image/read as stbi
 
 template createProgram*() : GLuint  =
@@ -18,6 +19,9 @@ template getUniformLocation*(program: GLuint, name: string) : GLuint  =
 
 template setInt*(program:GLuint, name: string, value: GLuint) =
     glUniform1i(getUniformLocation(program,name).GLint,value.GLint)
+
+template setMat4*(program: GLuint, name: string, value: var Mat4f) =
+  glUniformMatrix4fv(glGetUniformLocation(program, name).GLint, 1, GL_FALSE, value.caddr)
 
 template deleteShader*(shader:GLuint)  =
     glDeleteShader(shader.GLuint)
@@ -59,12 +63,12 @@ template use*(program:GLuint)  =
     glUseProgram(program.GLuint)
 
 # Compiles and attaches in 1 step with error reporting
-proc compileAndAttachShader*(shaderType:GLenum, shaderPath: string, programId:GLuint) : GLuint =    
+proc compileAndAttachShader*(shaderType:GLenum, shaderPath: string, programId:GLuint) : GLuint =
     let shaderId = createShader(shaderType)
     shaderSource(shaderId,readFile(shaderPath))
     compileShader(shaderId)
     if not getShaderCompileStatus(shaderId):
-        echo "Shader Compile Error ("&shaderPath&"):" 
+        echo "Shader Compile Error ("&shaderPath&"):"
         echo getShaderInfoLog(shaderId)
     else:
         attachShader(programId,shaderId)
@@ -82,45 +86,45 @@ proc createAndLinkProgram*(vertexPath:string, fragmentPath:string, geometryPath:
         else:
             0.GLuint
 
-    linkProgram(programId)    
+    linkProgram(programId)
 
     if not getProgramLinkStatus(programId):
         echo "Link Error:"
         echo getProgramInfoLog(programId)
-    
+
     deleteShader(vert)
     deleteShader(frag)
     if geometryPath != "": deleteShader(geo)
     programId
 
-template texImage2D*[T](target:GLenum, level:int32, internalFormat:GLEnum, width:int32, height:int32, format:GLenum, pixelType:GLenum, data: openArray[T] )  =    
+template texImage2D*[T](target:GLenum, level:int32, internalFormat:GLEnum, width:int32, height:int32, format:GLenum, pixelType:GLenum, data: openArray[T] )  =
     glTexImage2D(target,level.GLint,internalFormat.GLint,width.GLsizei,height.GLsizei,0,format,pixelType,data[0].unsafeAddr)
 
-template genBindTexture*(target:GLenum) : GLuint = 
+template genBindTexture*(target:GLenum) : GLuint =
     var tex : GLuint
     glGenTextures(1.GLsizei,addr tex)
     glBindTexture(target, tex)
     tex
 
-proc loadTextureWithMips*(path:string, gammaCorrection:bool = false) : GLuint =        
-    let textureId = genBindTexture(GL_Texture2D)    
+proc loadTextureWithMips*(path:string, gammaCorrection:bool = false) : GLuint =
+    let textureId = genBindTexture(GL_Texture2D)
     # stbi.setFlipVerticallyOnLoad(true)
-    var width,height,channels:int        
-    let data = stbi.load(path,width,height,channels,stbi.Default)        
+    var width,height,channels:int
+    let data = stbi.load(path,width,height,channels,stbi.Default)
     if data.len != 0:
         let gammaFormat =  GL_RGB
-                
-        let (internalFormat,dataFormat,param) = 
-            if channels == 1:                    
+
+        let (internalFormat,dataFormat,param) =
+            if channels == 1:
                 (GL_RED,GL_RED,GL_REPEAT)
-            elif channels == 3:                    
+            elif channels == 3:
                 (gammaFormat,GL_RGB,GL_REPEAT)
             elif channels == 4:
                 (gammaFormat,GL_RGBA,GL_REPEAT)
-            else:            
-                ( echo "texture unknown, assuming rgb";        
+            else:
+                ( echo "texture unknown, assuming rgb";
                         (GL_RGB,GL_RGB,GL_REPEAT) )
-                
+
         texImage2D(GL_TEXTURE_2D,
                     0'i32,
                     internalFormat,
@@ -130,13 +134,13 @@ proc loadTextureWithMips*(path:string, gammaCorrection:bool = false) : GLuint =
                     GL_UNSIGNED_BYTE,
                     data)
 
-        glGenerateMipmap(GL_TEXTURE_2D)        
-        
+        glGenerateMipmap(GL_TEXTURE_2D)
+
         glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,param)
-        glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,param)            
+        glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,param)
         glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR_MIPMAP_LINEAR)
-        glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR)               
+        glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR)
         textureId
     else:
-        echo "Failure to Load Image"            
+        echo "Failure to Load Image"
         0.GLuint

@@ -7,15 +7,16 @@ type
     VAO*, VBO*, EBO* : GLuint
 
 type
+  IntPair* = tuple
+    a: int32
+    b: int32
+
+type
   RenderableObject* = object
     vertices*: seq[seq[float32]]
     indices*: seq[seq[uint32]]
     buffers*: seq[Buffers]
-
-type
-  IntPair* = tuple
-    a: int32
-    b: int32
+    texPair*: seq[tuple[a: GLuint, b: GLuint]]
 
 var textures_IDs*: seq[GLuint]
 var lightmap_IDs*:  seq[GLuint]
@@ -108,17 +109,11 @@ proc CreateBuffers*(obj: RenderableObject) =
 
 
 proc renderFaces*(obj: RenderableObject) =
-  var tid, lmid : GLuint
-  let missinglm = lightmap_IDs[lightmap_IDs.high]
-
   for f in 0 ..< intpairs.len:
     if obj.buffers[f].VAO == 0: continue
 
-    tid = textures_IDs[intpairs[f].a]
-    if intpairs[f].b >= 0:
-      lmid = lightmap_IDs[intpairs[f].b]
-    else:
-      lmid = missinglm
+    let tid = obj.texPair[f].a
+    let lmid = obj.texPair[f].b
 
     glActiveTexture(GL_TEXTURE0)
     glBindTexture(GL_TEXTURE_2D, tid)

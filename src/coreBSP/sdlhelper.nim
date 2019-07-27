@@ -3,10 +3,10 @@ import opengl
 import glm
 import times
 import camera_util
+import shaderhelper
 
 
 var window: WindowPtr
-let camera = newCamera(vec3(0.0'f32, 600.0'f32, 0.0'f32))
 var W, H: cint
 
 proc sdlinit*(screenWidth: cint, screenHeight: cint, name: string = "OpenGL Window"): WindowPtr =
@@ -46,7 +46,7 @@ prevTime = epochTime()
 proc SwapBuffers*() =
   window.glSwapWindow()
 
-proc Update*() =
+proc Update*(camera: Camera) =
   currentTime = epochTime()
   let keyState = getKeyboardState()
   let elapsedTime = (currentTime - prevTime).float32*10.0'f32
@@ -82,17 +82,3 @@ proc Update*() =
     camera.processKeyBoard(RIGHT, elapsedTime)
   if keyState[SDL_SCANCODE_ESCAPE.uint8] != 0:
     run = false
-
-
-template setMat4*(program: GLuint, name: string, value: var Mat4f) =
-  glUniformMatrix4fv(glGetUniformLocation(program, name).GLint, 1, GL_FALSE, value.caddr)
-
-proc TransformCamera*(shaderID: GLuint) =
-  var projection = perspective(radians(camera.Zoom),
-            W.float32/H.float32, 0.1'f32, 10000.0'f32)
-  var view = camera.getViewMatrix()
-  var model = mat4(1.0'f32)
-  shaderID.setMat4("projection", projection)
-  shaderID.setMat4("view", view)
-  shaderID.setMat4("model", model)
-
