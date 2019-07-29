@@ -1,5 +1,6 @@
 import opengl
 import q3shaderparser
+import strutils
 
 
 type
@@ -41,45 +42,44 @@ template loadLightmaps*(lightmaps: untyped) =
   lightmap_IDs.add(missingLM)
 
 
-template loadSkyTexture(mapname: string, idx : int) =
-  let missingTEX = loadTextureWithMips(appDir&"/baseq3/textures/_engine/missing.png")
-  var skyblock = parseq3shader(mapname)
-  echo "SKYBLOCK: ", skyblock
-
-  if skyblock.len != 0:
-    for i in 0 ..< skyblock.len:
-      let path = (appDir / "baseq3" / skyblock[i])
-      echo "SKY texture: ", path
-      if existsFile(path & ".jpg"):
-        echo "OK"
-        textures_IDs[idx] = loadTextureWithMips(path & ".jpg")
-      else:
-        echo path, " [MISSING]"
-        textures_IDs[idx] = missingTEX
-  else:
-    echo " [SKYBLOCK EMPTY]"
-    textures_IDs[idx] = missingTEX
-
-
 template loadTextures*(mapname: string, textures: untyped) =
   let missingTEX = loadTextureWithMips(appDir&"/baseq3/textures/_engine/missing.png")
   let skyflags = [3124, 3092, 134193, 1044, 1076]
+  var shaderBlocks = parseq3shader(mapname)
+
+  var stextures: seq[string] = @[]
+  for sb in 0 ..< shaderBlocks.len:
+    stextures.add(shaderBlocks[sb].bsptexture)
 
   for i in 0 ..< textures.len:
     let texturepath = textures[i].name.join.split({'\0'}).join() # remove null terminated chars
     let textureflag = textures[i].flags
     let path = (appDir / "baseq3" / texturepath)
-    # echo "tex: ", path
+
     if existsFile(path & ".jpg"):
       textures_IDs[i] = loadTextureWithMips(path & ".jpg")
     elif existsFile(path & ".tga"):
       textures_IDs[i] = loadTextureWithMips(path & ".tga")
-    else:
-      echo texturepath, " ", textureflag
-      if textureflag in skyflags:
-        loadSkyTexture(mapname, i)
-      else:
+    elif shaderBlocks.len != 0:
+
+      let pos = find(stextures, texturepath)
+      if pos == -1:
         textures_IDs[i] = missingTEX
+      else:
+        var istrng = shaderBlocks[pos].internalstrings
+        if istrng.len == 0:
+          textures_IDs[i] = missingTEX
+          continue
+        for istr in istrng:
+          let rtex = appDir / "baseq3" / istr.split(" ")[1] # remove "map "
+          if existsFile(rtex):
+            textures_IDs[i] = loadTextureWithMips(rtex)
+          elif existsFile(rtex.split(".tga")[0] & ".jpg"):
+            textures_IDs[i] = loadTextureWithMips(rtex.split(".tga")[0] & ".jpg")
+          else:
+            textures_IDs[i] = missingTEX
+    else:
+      textures_IDs[i] = missingTEX
 
 
 template pushVertex*(container: var seq[seq[float32]], index: int, element: untyped) =
