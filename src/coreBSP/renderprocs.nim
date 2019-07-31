@@ -25,13 +25,13 @@ var intpairs*: seq[IntPair]
 
 
 template loadLightmaps*(lightmaps: untyped) =
-  var white : seq[float32] = @[0.5'f32, 0.5, 0.5]
-  var checker : array[12, byte] = [255'u8, 255, 255, 0, 0, 0, 0, 0, 0, 255, 255, 255]
+  let white : array[3, float32] = [0.5'f32, 0.5, 0.5]
+  let checker : array[12, byte] = [255'u8, 255, 255, 0, 0, 0, 0, 0, 0, 255, 255, 255]
   var missingLM: GLuint
 
   glGenTextures(1, missingLM.addr)
   glBindTexture(GL_TEXTURE_2D,missingLM)
-  glTexImage2D(GL_TEXTURE_2D, 0'i32, GL_RGB.GLint, 1, 1, 0, GL_RGB, cGL_FLOAT, addr white[0])
+  glTexImage2D(GL_TEXTURE_2D, 0'i32, GL_RGB.GLint, 1, 1, 0, GL_RGB, cGL_FLOAT, unsafeAddr white[0])
   glGenerateMipmap(GL_TEXTURE_2D)
 
   for lm in 0 ..< lightmaps.len:
@@ -45,11 +45,11 @@ template loadLightmaps*(lightmaps: untyped) =
 template loadTextures*(mapname: string, textures: untyped) =
   let missingTEX = loadTextureWithMips(appDir&"/baseq3/textures/_engine/missing.png")
   let skyflags = [3124, 3092, 134193, 1044, 1076]
-  var shaderBlocks = parseq3shader(mapname)
+  let shaderBlocks = parseq3shader(mapname)
+  var stextures = newseq[string](shaderBlocks.len)
 
-  var stextures: seq[string] = @[]
   for sb in 0 ..< shaderBlocks.len:
-    stextures.add(shaderBlocks[sb].bsptexture)
+    stextures[sb] = shaderBlocks[sb].bsptexture
 
   for i in 0 ..< textures.len:
     let texturepath = textures[i].name.join.split({'\0'}).join() # remove null terminated chars
@@ -66,8 +66,9 @@ template loadTextures*(mapname: string, textures: untyped) =
       if pos == -1:
         textures_IDs[i] = missingTEX
       else:
-        var istrng = shaderBlocks[pos].internalstrings
+        let istrng = shaderBlocks[pos].internalstrings
         if istrng.len == 0:
+          # echo "MISSING: ", texturepath
           textures_IDs[i] = missingTEX
           continue
         for istr in istrng:
@@ -78,21 +79,26 @@ template loadTextures*(mapname: string, textures: untyped) =
             textures_IDs[i] = loadTextureWithMips(rtex.split(".tga")[0] & ".jpg")
           else:
             textures_IDs[i] = missingTEX
+            # echo "MISSING ON DISK: ", texturepath & " > " & istr
     else:
       textures_IDs[i] = missingTEX
 
 
-template pushVertex*(container: var seq[seq[float32]], index: int, element: untyped) =
-  container[index].add(element.vPosition[0])
-  container[index].add(element.vPosition[1])
-  container[index].add(element.vPosition[2])
-  container[index].add(element.vTextureCoord[0])
-  container[index].add(element.vTextureCoord[1])
-  container[index].add(element.vLightmapCoord[0])
-  container[index].add(element.vLightmapCoord[1])
+template pushVertex*(container: seq[seq[float32]], index: int, element: untyped) =
+    # this is faster than container[index].add
+    let currentLen = container[index].len
+    container[index].setLen(currentLen + 7)
+
+    container[index][currentLen + 0] = element.vPosition[0]
+    container[index][currentLen + 1] = element.vPosition[1]
+    container[index][currentLen + 2] = element.vPosition[2]
+    container[index][currentLen + 3] = element.vTextureCoord[0]
+    container[index][currentLen + 4] = element.vTextureCoord[1]
+    container[index][currentLen + 5] = element.vLightmapCoord[0]
+    container[index][currentLen + 6] = element.vLightmapCoord[1]
 
 
-proc CreateBuffers*(obj: RenderableObject) =
+proc CreateBuffers*(obj: RenderableObject) {.inline.} =
   for f in 0 ..< obj.vertices.len:
     if obj.vertices[f].len != 0:
 
@@ -108,7 +114,7 @@ proc CreateBuffers*(obj: RenderableObject) =
       glBufferData(GL_ELEMENT_ARRAY_BUFFER, obj.indices[f].len*sizeof(uint32), obj.indices[f][0].unsafeAddr, GL_STATIC_DRAW)
 
 
-proc renderFaces*(obj: RenderableObject) =
+proc renderFaces*(obj: RenderableObject) {.inline.} =
   for f in 0 ..< intpairs.len:
     if obj.buffers[f].VAO == 0: continue
 
