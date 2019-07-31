@@ -81,7 +81,7 @@ proc processMouseScroll*(camera:Camera, yoffset:float32) =
 
 proc TransformCamera*(shaderID: GLuint, camera: Camera) =
   var projection = perspective(radians(camera.Zoom),
-            4 div 3, 0.1, 10000.0)
+            4/3, 0.1, 10000.0)
   var view = camera.getViewMatrix()
   var model = mat4(1.0'f32)
   shaderID.setMat4("projection", projection)
