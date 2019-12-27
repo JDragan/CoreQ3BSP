@@ -26,7 +26,7 @@ var intpairs*: seq[IntPair]
 
 template loadLightmaps*(lightmaps: untyped) =
   let white : array[3, float32] = [0.5'f32, 0.5, 0.5]
-  let checker : array[12, byte] = [255'u8, 255, 255, 0, 0, 0, 0, 0, 0, 255, 255, 255]
+  # let checker : array[12, byte] = [255'u8, 255, 255, 0, 0, 0, 0, 0, 0, 255, 255, 255]
   var missingLM: GLuint
 
   glGenTextures(1, missingLM.addr)
@@ -44,7 +44,7 @@ template loadLightmaps*(lightmaps: untyped) =
 
 template loadTextures*(mapname: string, textures: untyped) =
   let missingTEX = loadTextureWithMips(appDir&"/baseq3/textures/_engine/missing.png")
-  let skyflags = [3124, 3092, 134193, 1044, 1076]
+  # let skyflags = [3124, 3092, 134193, 1044, 1076]
   let shaderBlocks = parseq3shader(mapname)
   var stextures = newseq[string](shaderBlocks.len)
 
@@ -53,7 +53,7 @@ template loadTextures*(mapname: string, textures: untyped) =
 
   for i in 0 ..< textures.len:
     let texturepath = textures[i].name.join.split({'\0'}).join() # remove null terminated chars
-    let textureflag = textures[i].flags
+    # let textureflag = textures[i].flags
     let path = (appDir / "baseq3" / texturepath)
 
     if existsFile(path & ".jpg"):

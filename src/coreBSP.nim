@@ -1,7 +1,7 @@
 import opengl
 import glm
 import os
-import sequtils, strutils
+import strutils
 import coreBSP/[bspfile, q3patch, renderprocs, shaderhelper, sdlhelper, camera_util]
 
 

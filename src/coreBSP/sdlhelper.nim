@@ -1,9 +1,7 @@
 import sdl2
 import opengl
-import glm
 import times
 import camera_util
-import shaderhelper
 
 
 var window: WindowPtr
