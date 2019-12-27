@@ -3,7 +3,7 @@ import renderprocs
 import q3patch
 
 
-proc CreateFace*(f: int, pos: int, bsp: q3bspmap, FACE: ptr RenderableObject) =
+proc CreateFace*(f: int, pos: int, bsp: ptr q3bspmap, FACE: ptr RenderableObject) =
   let face = bsp.faces[f]
   var indice_offset : uint32
 
@@ -26,7 +26,7 @@ proc CreateFace*(f: int, pos: int, bsp: q3bspmap, FACE: ptr RenderableObject) =
     FACE.texPair[pos].b = lightmap_IDs[lightmap_IDs.high] # missing lightmap id=1
 
 
-proc CreatePatch*(index: int, pos: int, bsp: q3bspmap, PATCH: ptr RenderableObject) =
+proc CreatePatch*(index: int, pos: int, bsp: ptr q3bspmap, PATCH: ptr RenderableObject) =
   let face = bsp.faces[index]
   var patch : tBSPPatch
 
@@ -65,3 +65,42 @@ proc CreatePatch*(index: int, pos: int, bsp: q3bspmap, PATCH: ptr RenderableObje
   if intpairs[pos].b >= 0:
     PATCH.texPair[pos].b = lightmap_IDs[face.lightmapID]
   else: PATCH.texPair[pos].b = lightmap_IDs[lightmap_IDs.high]
+
+
+proc SortFaces*(bsp: ptr q3bspmap, FACE, PATCH: ptr RenderableObject) =
+  for f in 0 ..< bsp.faces.len: # make pairs
+    let face = bsp.faces[f]
+
+    let thepair = (face.textureID, face.lightmapID)
+    var pos = find(intpairs, thepair)
+
+    if pos == -1: intpairs.add(thepair)
+
+  # set lengths
+  FACE.vertices.setLen(intpairs.len)
+  FACE.indices.setLen(intpairs.len)
+  FACE.buffers.setLen(intpairs.len)
+  FACE.texPair.setLen(intpairs.len)
+
+  PATCH.vertices.setLen(intpairs.len)
+  PATCH.indices.setLen(intpairs.len)
+  PATCH.buffers.setLen(intpairs.len)
+  PATCH.texPair.setLen(intpairs.len)
+
+  textures_IDs.setLen(bsp.textures.len)
+  lightmap_IDs.setLen(bsp.lightmaps.len)
+  # echo "tPairs size: ", intpairs.len
+
+  loadLightmaps(bsp.lightmaps)
+  loadTextures(bsp.name, bsp.textures)
+
+  # create faces
+  for f in 0 ..< bsp.faces.len:
+    let face = bsp.faces[f]
+    let thepair = (face.textureID, face.lightmapID)
+    let pos = find(intpairs, thepair)
+
+    if (bsp.faces[f].facetype != 2):
+      CreateFace(f, pos.int, bsp, FACE)
+    else:
+      CreatePatch(f, pos.int, bsp, PATCH)

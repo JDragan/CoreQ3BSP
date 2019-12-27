@@ -2,6 +2,8 @@ import opengl
 import q3shaderparser
 import strutils
 import bspstruct
+import shaderhelper
+import os
 
 
 type
@@ -25,7 +27,7 @@ var lightmap_IDs*:  seq[GLuint]
 var intpairs*: seq[IntPair]
 
 
-template loadLightmaps*(lightmaps: untyped) =
+proc loadLightmaps*(lightmaps: seq[tBSPLightmap]) =
   let white : array[3, float32] = [0.5'f32, 0.5, 0.5]
   # let checker : array[12, byte] = [255'u8, 255, 255, 0, 0, 0, 0, 0, 0, 255, 255, 255]
   var missingLM: GLuint
@@ -38,12 +40,13 @@ template loadLightmaps*(lightmaps: untyped) =
   for lm in 0 ..< lightmaps.len:
     glGenTextures(1, lightmap_IDs[lm].addr)
     glBindTexture(GL_TEXTURE_2D,lightmap_IDs[lm])
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB.GLint, 128, 128, 0, GL_RGB, GL_UNSIGNED_BYTE, addr lightmaps[lm].imageBits)
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB.GLint, 128, 128, 0, GL_RGB, GL_UNSIGNED_BYTE, unsafeAddr lightmaps[lm].imageBits)
     glGenerateMipmap(GL_TEXTURE_2D)
   lightmap_IDs.add(missingLM)
 
 
-template loadTextures*(mapname: string, textures: untyped) =
+proc loadTextures*(mapname: string, textures: seq[tBSPTexture]) =
+  let appDir = getAppDir()
   let missingTEX = loadTextureWithMips(appDir&"/baseq3/textures/_engine/missing.png")
   # let skyflags = [3124, 3092, 134193, 1044, 1076]
   let shaderBlocks = parseq3shader(mapname)
