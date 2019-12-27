@@ -1,6 +1,7 @@
 import opengl
 import q3shaderparser
 import strutils
+import bspstruct
 
 
 type
@@ -83,8 +84,8 @@ template loadTextures*(mapname: string, textures: untyped) =
     else:
       textures_IDs[i] = missingTEX
 
-
-template pushVertex*(container: seq[seq[float32]], index: int, element: untyped) =
+import glm
+proc pushVertex*(container: ptr seq[seq[float32]], index: int, element: tBSPVertex) =
     # this is faster than container[index].add
     let currentLen = container[index].len
     container[index].setLen(currentLen + 7)
