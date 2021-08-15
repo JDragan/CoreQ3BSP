@@ -97,6 +97,22 @@ proc createAndLinkProgram*(vertexPath:string, fragmentPath:string, geometryPath:
     if geometryPath != "": deleteShader(geo)
     programId
 
+import os
+
+proc initShaders*(): GLuint =
+    let appDir = getAppDir()
+
+    let shader = createAndLinkProgram(
+    appDir&"/shaders/simple.vert",
+    appDir&"/shaders/simple.frag"
+    )
+
+    shader.use()
+    shader.setInt("TEX", 0)
+    shader.setInt("LMAP", 1)
+    return shader
+
+
 template texImage2D*[T](target:GLenum, level:int32, internalFormat:GLEnum, width:int32, height:int32, format:GLenum, pixelType:GLenum, data: openArray[T] )  =
     glTexImage2D(target,level.GLint,internalFormat.GLint,width.GLsizei,height.GLsizei,0,format,pixelType,data[0].unsafeAddr)
 

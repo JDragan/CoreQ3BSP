@@ -18,7 +18,7 @@ proc parseq3shader*(mapname: string): seq[shdBlock] =
         var q3shdr: shdBlock
 
 
-        if existsFile(q3shaderfile):
+        if fileExists(q3shaderfile):
             for line in lines open(q3shaderfile):
 
                 if line.startsWith("//"): continue

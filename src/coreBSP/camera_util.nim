@@ -18,8 +18,8 @@ let MINZOOM = 1.0
 let MAXZOOM = 145.0
 
 type Camera* = ref object
-    Position*,Front*,Up*,Right*,WorldUp*:Vec3f
-    Yaw*,Pitch*,MovementSpeed*,MouseSensitivity*,Zoom*:float32
+    Position*, Front*, Up*, Right*, WorldUp*: Vec3f
+    Yaw*, Pitch*, MovementSpeed*, MouseSensitivity*, Zoom*: float32
 
 proc updateCameraVectors(camera: Camera) =
     camera.Front.x = cos(radians(camera.Yaw)) * cos(radians(camera.Pitch))
@@ -27,24 +27,32 @@ proc updateCameraVectors(camera: Camera) =
     camera.Front.z = sin(radians(camera.Yaw)) * cos(radians(camera.Pitch))
     camera.Front = normalize(camera.Front);
     camera.Right = normalize(cross(camera.Front, camera.WorldUp))
-    camera.Up    = normalize(cross(camera.Right, camera.Front))
+    camera.Up = normalize(cross(camera.Right, camera.Front))
 
-proc newCamera*(position:Vec3f = vec3(0.0'f32),up:Vec3f = vec3(0.0'f32,1.0'f32,0.0'f32),yaw:float32 = YAW,pitch:float32 = PITCH) : Camera =
+proc newCamera*(
+    position: Vec3f = vec3(0.0'f32),
+    up: Vec3f = vec3(0.0'f32, 1.0'f32, 0.0'f32),
+    yaw: float32 = YAW,
+    pitch: float32 = PITCH
+    ): Camera =
+
     var camera = Camera(
-        Position : position,
-        WorldUp : up,
-        Yaw : yaw,
-        MovementSpeed : SPEED,
-        MouseSensitivity :SENSITIVITY,
-        Zoom : ZOOM,
-        Front: vec3(0.0'f32,0.0'f32,-1.0'f32))
+        Position: position,
+        WorldUp: up,
+        Yaw: yaw,
+        MovementSpeed: SPEED,
+        MouseSensitivity: SENSITIVITY,
+        Zoom: ZOOM,
+        Front: vec3(0.0'f32, 0.0'f32, -1.0'f32)
+    )
     camera.updateCameraVectors()
     camera
 
-proc getViewMatrix*(camera:Camera) : Mat4f =
+proc getViewMatrix*(camera: Camera): Mat4f =
     lookAt(camera.Position, camera.Position + camera.Front, camera.Up)
 
-proc processKeyboard*(camera:Camera,direction:CameraMovement, deltaTime:float32) =
+proc processKeyboard*(camera: Camera, direction: CameraMovement,
+        deltaTime: float32) =
     let velocity = camera.MovementSpeed*deltaTime
     case direction:
         of FORWARD:
@@ -56,7 +64,13 @@ proc processKeyboard*(camera:Camera,direction:CameraMovement, deltaTime:float32)
         of RIGHT:
             camera.Position = camera.Position + camera.Right * velocity
 
-proc processMouseMovement*(camera:Camera, xoffset: float32, yoffset:float32, constrainPitch: bool = true) =
+proc processMouseMovement*(
+    camera: Camera,
+    xoffset: float32,
+    yoffset: float32,
+    constrainPitch: bool = true
+    ) =
+
     let adjustedXOffset = xoffset * camera.MouseSensitivity
     let adjustedYOffset = yoffset * camera.MouseSensitivity
 
@@ -71,7 +85,7 @@ proc processMouseMovement*(camera:Camera, xoffset: float32, yoffset:float32, con
 
     updateCameraVectors(camera)
 
-proc processMouseScroll*(camera:Camera, yoffset:float32) =
+proc processMouseScroll*(camera: Camera, yoffset: float32) =
     if camera.Zoom >= MINZOOM and camera.Zoom <= MAXZOOM:
         camera.Zoom = camera.Zoom - yoffset
     if camera.Zoom <= MINZOOM:
@@ -80,10 +94,10 @@ proc processMouseScroll*(camera:Camera, yoffset:float32) =
         camera.Zoom = MAXZOOM
 
 proc TransformCamera*(shaderID: GLuint, camera: Camera) =
-  var projection = perspective(radians(camera.Zoom),
-            4/3, 0.1, 10000.0)
-  var view = camera.getViewMatrix()
-  var model = mat4(1.0'f32)
-  shaderID.setMat4("projection", projection)
-  shaderID.setMat4("view", view)
-  shaderID.setMat4("model", model)
+    var projection = perspective(radians(camera.Zoom),
+              4/3, 0.1, 10000.0)
+    var view = camera.getViewMatrix()
+    var model = mat4(1.0'f32)
+    shaderID.setMat4("projection", projection)
+    shaderID.setMat4("view", view)
+    shaderID.setMat4("model", model)

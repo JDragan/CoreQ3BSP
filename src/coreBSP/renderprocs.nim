@@ -60,9 +60,9 @@ proc loadTextures*(mapname: string, textures: seq[tBSPTexture]) =
     # let textureflag = textures[i].flags
     let path = (appDir / "baseq3" / texturepath)
 
-    if existsFile(path & ".jpg"):
+    if fileExists(path & ".jpg"):
       textures_IDs[i] = loadTextureWithMips(path & ".jpg")
-    elif existsFile(path & ".tga"):
+    elif fileExists(path & ".tga"):
       textures_IDs[i] = loadTextureWithMips(path & ".tga")
     elif shaderBlocks.len != 0:
 
@@ -77,9 +77,9 @@ proc loadTextures*(mapname: string, textures: seq[tBSPTexture]) =
           continue
         for istr in istrng:
           let rtex = appDir / "baseq3" / istr.split(" ")[1] # remove "map "
-          if existsFile(rtex):
+          if fileExists(rtex):
             textures_IDs[i] = loadTextureWithMips(rtex)
-          elif existsFile(rtex.split(".tga")[0] & ".jpg"):
+          elif fileExists(rtex.split(".tga")[0] & ".jpg"):
             textures_IDs[i] = loadTextureWithMips(rtex.split(".tga")[0] & ".jpg")
           else:
             textures_IDs[i] = missingTEX
@@ -148,3 +148,8 @@ proc defaultGLsetup*() =
   glEnable(GL_DEPTH_TEST)
   glEnable(GL_CULL_FACE)
   glCullFace(GL_FRONT)
+
+
+proc renderBackground*() =
+  glClearColor(0.055, 0.066, 0.1, 1.0)
+  glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT)

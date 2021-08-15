@@ -1,4 +1,5 @@
 import bspstruct
+import bspfile
 import renderprocs
 import q3patch
 
@@ -104,3 +105,19 @@ proc SortFaces*(bsp: ptr q3bspmap, FACE, PATCH: ptr RenderableObject) =
       CreateFace(f, pos.int, bsp, FACE)
     else:
       CreatePatch(f, pos.int, bsp, PATCH)
+
+
+type BspRenderer = object
+  faces*: RenderableObject
+  patches*: RenderableObject
+
+
+proc loadBsp*(filepath: string): BspRenderer =
+  var bsp = readBSP(filepath)
+  var br = BspRenderer()
+
+  SortFaces(bsp.addr, br.faces.addr, br.patches.addr)
+
+  CreateBuffers(br.faces)
+  CreateBuffers(br.patches)
+  return br
