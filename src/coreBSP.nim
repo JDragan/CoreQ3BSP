@@ -1,6 +1,6 @@
 import glm
 import os
-import coreBSP/[renderprocs, world, shaderhelper, sdlhelper, camera_util]
+import coreBSP/[renderprocs, world, shaderhelper, sdlhelper, camera_util, profiling]
 
 
 if paramCount() == 0:
@@ -15,6 +15,8 @@ let bsp = loadBsp(paramStr(1))
 defaultGLsetup()
 SDLshowWindow(mainWindow)
 
+var timer = FpsTimer()
+
 while run:
   Update(mainCamera)
 
@@ -24,5 +26,7 @@ while run:
 
   renderFaces(bsp.faces)
   renderFaces(bsp.patches)
+
+  timer.getFps(1000)
 
   SwapBuffers()

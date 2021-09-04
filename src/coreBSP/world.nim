@@ -69,11 +69,9 @@ proc CreatePatch*(index: int, pos: int, bsp: ptr q3bspmap, PATCH: ptr Renderable
 
 
 proc SortFaces*(bsp: ptr q3bspmap, FACE, PATCH: ptr RenderableObject) =
-  for f in 0 ..< bsp.faces.len: # make pairs
-    let face = bsp.faces[f]
-
+  for face in bsp.faces: # make pairs
     let thepair = (face.textureID, face.lightmapID)
-    var pos = find(intpairs, thepair)
+    let pos = find(intpairs, thepair)
 
     if pos == -1: intpairs.add(thepair)
 
