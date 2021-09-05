@@ -1,7 +1,7 @@
-import glm
-
-
 proc fseek*(f: File, offset: clong, whence: int) {.importc: "fseek", header: "<stdio.h>", tags: [].}
+
+type Vec3f = array[3, float32]
+type Vec2f = array[2, float32]
 
 type eLumps* = enum
   kEntities,

@@ -45,9 +45,9 @@ proc readBSP*(filename: string): q3bspmap =
     discard f.readBuffer(bsp.vertices[v].addr, sizeof(tBSPVertex))
 
   for i in 0 ..< num_vertices:
-    var temp: float32 = bsp.vertices[i].vPosition.arr[1]
-    bsp.vertices[i].vPosition.arr[1] = bsp.vertices[i].vPosition.arr[2]
-    bsp.vertices[i].vPosition.arr[2] = -temp
+    var temp: float32 = bsp.vertices[i].vPosition[1]
+    bsp.vertices[i].vPosition[1] = bsp.vertices[i].vPosition[2]
+    bsp.vertices[i].vPosition[2] = -temp
 
 
   echo "reading ", num_indices, " indices"

@@ -1,4 +1,3 @@
-import glm
 import bspstruct
 
 type
@@ -14,18 +13,36 @@ type
     textureID*: int32
     lightmapID*: int32
 
-proc `*`(v1: tBSPVertex, d: float): tBSPVertex =
+proc `*`(v1: tBSPVertex, d: float32): tBSPVertex =
   var temp : tBSPVertex
-  temp.vPosition = v1.vPosition * d
-  temp.vTextureCoord = v1.vTextureCoord * d
-  temp.vLightmapCoord = v1.vLightmapCoord * d
-  temp
+  temp.vPosition[0] = v1.vPosition[0] * d
+  temp.vPosition[1] = v1.vPosition[1] * d
+  temp.vPosition[2] = v1.vPosition[2] * d
+
+  temp.vTextureCoord[0] = v1.vTextureCoord[0] * d
+  temp.vTextureCoord[1] = v1.vTextureCoord[1] * d
+  temp.vTextureCoord[2] = v1.vTextureCoord[2] * d
+
+  temp.vLightmapCoord[0] = v1.vLightmapCoord[0] * d
+  temp.vLightmapCoord[1] = v1.vLightmapCoord[1] * d
+  temp.vLightmapCoord[2] = v1.vLightmapCoord[2] * d
+
+  return temp
 
 proc `+`(v1: tBSPVertex, v2: tBSPVertex): tBSPVertex =
   var temp : tBSPVertex
-  temp.vPosition = v1.vPosition + v2.vPosition;
-  temp.vTextureCoord = v1.vTextureCoord + v2.vTextureCoord;
-  temp.vLightmapCoord = v1.vLightmapCoord + v2.vLightmapCoord;
+  temp.vPosition[0] = v1.vPosition[0] + v2.vPosition[0];
+  temp.vPosition[1] = v1.vPosition[1] + v2.vPosition[1];
+  temp.vPosition[2] = v1.vPosition[2] + v2.vPosition[2];
+
+  temp.vTextureCoord[0] = v1.vTextureCoord[0] + v2.vTextureCoord[0];
+  temp.vTextureCoord[1] = v1.vTextureCoord[1] + v2.vTextureCoord[1];
+  temp.vTextureCoord[2] = v1.vTextureCoord[2] + v2.vTextureCoord[2];
+
+  temp.vLightmapCoord[0] = v1.vLightmapCoord[0] + v2.vLightmapCoord[0];
+  temp.vLightmapCoord[1] = v1.vLightmapCoord[1] + v2.vLightmapCoord[1];
+  temp.vLightmapCoord[02] = v1.vLightmapCoord[2] + v2.vLightmapCoord[2];
+
   return temp;
 
 proc Subdivide*(bezierpatch: BezierPatch): ptr BezierPatch =
