@@ -1,13 +1,13 @@
 import
     opengl,
     glm,
+    # vmath,
     stb_image/read as stbi
 
-template createProgram*() : GLuint  =
-    glCreateProgram().GLuint
+template createProgram*() : GLuint  = glCreateProgram()
 
 template createShader*(shaderType:GLenum) : GLuint  =
-    glCreateShader(shaderType).GLuint
+    glCreateShader(shaderType)
 
 template getProgramLinkStatus*(program:GLuint) : bool  =
     var r : GLint
@@ -15,25 +15,21 @@ template getProgramLinkStatus*(program:GLuint) : bool  =
     r.bool
 
 template getUniformLocation*(program: GLuint, name: string) : GLuint  =
-    glGetUniformLocation(program.GLuint,name).GLuint
+    glGetUniformLocation(program,name).GLuint
 
 template setInt*(program:GLuint, name: string, value: GLuint) =
     glUniform1i(getUniformLocation(program,name).GLint,value.GLint)
 
 template setMat4*(program: GLuint, name: string, value: var Mat4f) =
-  glUniformMatrix4fv(glGetUniformLocation(program, name).GLint, 1, GL_FALSE, value.caddr)
+  glUniformMatrix4fv(glGetUniformLocation(program, name), 1, GL_FALSE, value.caddr)
 
-template deleteShader*(shader:GLuint)  =
-    glDeleteShader(shader.GLuint)
+template deleteShader*(shader:GLuint)  = glDeleteShader(shader.GLuint)
 
-template linkProgram*(program:GLuint)  =
-    glLinkProgram(program.GLuint)
+template linkProgram*(program:GLuint)  = glLinkProgram(program.GLuint)
 
-template attachShader*(program:GLuint, shader:GLuint)  =
-    glAttachShader(program.GLuint,shader.GLuint)
+template attachShader*(program:GLuint, shader:GLuint)  = glAttachShader(program.GLuint,shader.GLuint)
 
-template compileShader*(shader:GLuint)  =
-    glCompileShader(shader.GLuint)
+template compileShader*(shader:GLuint)  = glCompileShader(shader.GLuint)
 
 template shaderSource*(shader:GLuint, src: string) =
     let cstr =  allocCStringArray([src])
