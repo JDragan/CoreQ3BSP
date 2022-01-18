@@ -1,6 +1,6 @@
 import glm
-import shaderhelper
 import opengl/private/types
+from shaderhelper import setMat4
 
 type CameraMovement* = enum
     FORWARD,
@@ -10,7 +10,7 @@ type CameraMovement* = enum
 
 let YAW = -90.0
 let PITCH = 0.0
-let MAXPITCH = 89.0
+let MAXPITCH = 89.9
 let SPEED = 40.0
 let SENSITIVITY = 0.1
 let ZOOM = 85.0

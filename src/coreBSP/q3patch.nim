@@ -21,11 +21,9 @@ proc `*`(v1: tBSPVertex, d: float32): tBSPVertex =
 
   temp.vTextureCoord[0] = v1.vTextureCoord[0] * d
   temp.vTextureCoord[1] = v1.vTextureCoord[1] * d
-  temp.vTextureCoord[2] = v1.vTextureCoord[2] * d
 
   temp.vLightmapCoord[0] = v1.vLightmapCoord[0] * d
   temp.vLightmapCoord[1] = v1.vLightmapCoord[1] * d
-  temp.vLightmapCoord[2] = v1.vLightmapCoord[2] * d
 
   return temp
 
@@ -37,11 +35,9 @@ proc `+`(v1: tBSPVertex, v2: tBSPVertex): tBSPVertex =
 
   temp.vTextureCoord[0] = v1.vTextureCoord[0] + v2.vTextureCoord[0];
   temp.vTextureCoord[1] = v1.vTextureCoord[1] + v2.vTextureCoord[1];
-  temp.vTextureCoord[2] = v1.vTextureCoord[2] + v2.vTextureCoord[2];
 
   temp.vLightmapCoord[0] = v1.vLightmapCoord[0] + v2.vLightmapCoord[0];
   temp.vLightmapCoord[1] = v1.vLightmapCoord[1] + v2.vLightmapCoord[1];
-  temp.vLightmapCoord[02] = v1.vLightmapCoord[2] + v2.vLightmapCoord[2];
 
   return temp;
 

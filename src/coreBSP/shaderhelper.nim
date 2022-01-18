@@ -23,41 +23,39 @@ template setInt*(program: GLuint, name: string, value: GLuint) =
 template setMat4*(program: GLuint, name: string, value: var Mat4f) =
     glUniformMatrix4fv(glGetUniformLocation(program, name), 1, GL_FALSE, value.caddr)
 
-template deleteShader*(shader: GLuint) = glDeleteShader(shader.GLuint)
+template deleteShader*(shader: GLuint) = glDeleteShader(shader)
 
-template linkProgram*(program: GLuint) = glLinkProgram(program.GLuint)
+template linkProgram*(program: GLuint) = glLinkProgram(program)
 
-template attachShader*(program: GLuint, shader: GLuint) = glAttachShader(
-        program.GLuint, shader.GLuint)
+template attachShader*(program: GLuint, shader: GLuint) = glAttachShader(program, shader)
 
-template compileShader*(shader: GLuint) = glCompileShader(shader.GLuint)
+template compileShader*(shader: GLuint) = glCompileShader(shader)
 
 template shaderSource*(shader: GLuint, src: string) =
     let cstr = allocCStringArray([src])
-    glShaderSource(shader.GLuint, 1, cstr, nil)
+    glShaderSource(shader, 1, cstr, nil)
     deallocCStringArray(cstr)
 
 template getProgramInfoLog*(program: GLuint): string =
     var logLen: GLint
     glGetProgramiv(program.GLuint, GL_INFO_LOG_LENGTH, addr logLen)
     var logStr = cast[ptr GLchar](alloc(logLen))
-    glGetProgramInfoLog(program.GLuint, logLen, addr logLen, logStr)
+    glGetProgramInfoLog(program, logLen, logLen.addr, logStr)
     $logStr
 
 template getShaderInfoLog*(shader: GLuint): string =
     var logLen: GLint
     glGetShaderiv(shader.GLuint, GL_INFO_LOG_LENGTH, addr logLen)
     var logStr = cast[ptr GLchar](alloc(logLen))
-    glGetShaderInfoLog(shader.GLuint, logLen, addr logLen, logStr)
+    glGetShaderInfoLog(shader, logLen, logLen.addr, logStr)
     $logStr
 
 template getShaderCompileStatus*(shader: GLuint): bool =
     var r: GLint
-    glGetShaderiv(shader.GLuint, GL_COMPILE_STATUS, addr r)
+    glGetShaderiv(shader.GLuint, GL_COMPILE_STATUS, r.addr)
     r.bool
 
-template use*(program: GLuint) =
-    glUseProgram(program.GLuint)
+template use*(program: GLuint) = glUseProgram(program)
 
 # Compiles and attaches in 1 step with error reporting
 proc compileAndAttachShader*(shaderType: GLenum, shaderPath: string,
@@ -112,13 +110,13 @@ proc initShaders*(): GLuint =
     return shader
 
 
-template texImage2D*[T](target: GLenum, level: int32, internalFormat: GLEnum,
+template texImage2D[T](target: GLenum, level: int32, internalFormat: GLEnum,
         width: int32, height: int32, format: GLenum, pixelType: GLenum,
         data: openArray[T]) =
     glTexImage2D(target, level.GLint, internalFormat.GLint, width.GLsizei,
             height.GLsizei, 0, format, pixelType, data[0].unsafeAddr)
 
-template genBindTexture*(target: GLenum): GLuint =
+template genBindTexture(target: GLenum): GLuint =
     var tex: GLuint
     glGenTextures(1.GLsizei, addr tex)
     glBindTexture(target, tex)
