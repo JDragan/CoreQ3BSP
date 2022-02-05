@@ -8,7 +8,7 @@ import os
 
 type
   Buffers* = object
-    VAO*, VBO*, EBO* : GLuint
+    VAO*, VBO*, EBO*: GLuint
 
 type
   IntPair* = tuple
@@ -23,24 +23,24 @@ type
     texPair*: seq[tuple[a: GLuint, b: GLuint]]
 
 var textures_IDs*: seq[GLuint]
-var lightmap_IDs*:  seq[GLuint]
+var lightmap_IDs*: seq[GLuint]
 var intpairs*: seq[IntPair]
 
 
 proc loadLightmaps*(lightmaps: seq[tBSPLightmap]) =
-  let white : array[3, float32] = [0.5'f32, 0.5, 0.5]
+  let white: array[3, float32] = [0.5'f32, 0.5, 0.5]
   # let checker : array[12, byte] = [255'u8, 255, 255, 0, 0, 0, 0, 0, 0, 255, 255, 255]
   var missingLM: GLuint
 
   glGenTextures(1, missingLM.addr)
-  glBindTexture(GL_TEXTURE_2D,missingLM)
-  glTexImage2D(GL_TEXTURE_2D, 0'i32, GL_RGB.GLint, 1, 1, 0, GL_RGB, cGL_FLOAT, unsafeAddr white[0])
+  glBindTexture(GL_TEXTURE_2D, missingLM)
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB.GLint, 1, 1, 0, GL_RGB, cGL_FLOAT, white[0].addr)
   glGenerateMipmap(GL_TEXTURE_2D)
 
   for lm in 0 ..< lightmaps.len:
     glGenTextures(1, lightmap_IDs[lm].addr)
-    glBindTexture(GL_TEXTURE_2D,lightmap_IDs[lm])
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB.GLint, 128, 128, 0, GL_RGB, GL_UNSIGNED_BYTE, unsafeAddr lightmaps[lm].imageBits)
+    glBindTexture(GL_TEXTURE_2D, lightmap_IDs[lm])
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB.GLint, 128, 128, 0, GL_RGB, GL_UNSIGNED_BYTE, lightmaps[lm].imageBits.addr)
     glGenerateMipmap(GL_TEXTURE_2D)
   lightmap_IDs.add(missingLM)
 
@@ -56,7 +56,7 @@ proc loadTextures*(mapname: string, textures: seq[tBSPTexture]) =
     stextures[sb] = shaderBlocks[sb].bsptexture
 
   for i in 0 ..< textures.len:
-    let texturepath = textures[i].name.join.split({'\0'}).join() # remove null terminated chars
+    let texturepath = textures[i].name.join.split({'\0'}).join()         # remove null terminated chars
     # let textureflag = textures[i].flags
     let path = (appDir / "baseq3" / texturepath)
 
@@ -87,35 +87,35 @@ proc loadTextures*(mapname: string, textures: seq[tBSPTexture]) =
     else:
       textures_IDs[i] = missingTEX
 
-import glm
-proc pushVertex*(container: ptr seq[seq[float32]], index: int, element: tBSPVertex) =
-    # this is faster than container[index].add
-    let currentLen = container[index].len
-    container[index].setLen(currentLen + 7)
 
-    container[index][currentLen + 0] = element.vPosition[0]
-    container[index][currentLen + 1] = element.vPosition[1]
-    container[index][currentLen + 2] = element.vPosition[2]
-    container[index][currentLen + 3] = element.vTextureCoord[0]
-    container[index][currentLen + 4] = element.vTextureCoord[1]
-    container[index][currentLen + 5] = element.vLightmapCoord[0]
-    container[index][currentLen + 6] = element.vLightmapCoord[1]
+proc pushVertex*(container: ptr seq[seq[float32]], index: int, element: tBSPVertex) =
+  # this is faster than container[index].add
+  let currentLen = container[index].len
+  container[index].setLen(currentLen + 7)
+
+  container[index][currentLen + 0] = element.vPosition[0]
+  container[index][currentLen + 1] = element.vPosition[1]
+  container[index][currentLen + 2] = element.vPosition[2]
+  container[index][currentLen + 3] = element.vTextureCoord[0]
+  container[index][currentLen + 4] = element.vTextureCoord[1]
+  container[index][currentLen + 5] = element.vLightmapCoord[0]
+  container[index][currentLen + 6] = element.vLightmapCoord[1]
 
 
 proc CreateBuffers*(obj: RenderableObject) {.inline.} =
   for f in 0 ..< obj.vertices.len:
     if obj.vertices[f].len != 0:
 
-      glGenVertexArrays(1 ,obj.buffers[f].VAO.unsafeAddr)
+      glGenVertexArrays(1, obj.buffers[f].VAO.addr)
       glBindVertexArray(obj.buffers[f].VAO)
 
-      glGenBuffers(1, obj.buffers[f].VBO.unsafeAddr)
+      glGenBuffers(1, obj.buffers[f].VBO.addr)
       glBindBuffer(GL_ARRAY_BUFFER, obj.buffers[f].VBO)
-      glBufferData(GL_ARRAY_BUFFER, obj.vertices[f].len*sizeof(GLfloat), obj.vertices[f][0].unsafeAddr, GL_STATIC_DRAW)
+      glBufferData(GL_ARRAY_BUFFER, obj.vertices[f].len*sizeof(GLfloat), obj.vertices[f][0].addr, GL_STATIC_DRAW)
 
-      glGenBuffers(1, obj.buffers[f].EBO.unsafeAddr)
+      glGenBuffers(1, obj.buffers[f].EBO.addr)
       glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, obj.buffers[f].EBO)
-      glBufferData(GL_ELEMENT_ARRAY_BUFFER, obj.indices[f].len*sizeof(uint32), obj.indices[f][0].unsafeAddr, GL_STATIC_DRAW)
+      glBufferData(GL_ELEMENT_ARRAY_BUFFER, obj.indices[f].len*sizeof(uint32), obj.indices[f][0].addr, GL_STATIC_DRAW)
 
 
 proc renderFaces*(obj: RenderableObject) {.inline.} =
@@ -130,7 +130,7 @@ proc renderFaces*(obj: RenderableObject) {.inline.} =
     glActiveTexture(GL_TEXTURE1)
     glBindTexture(GL_TEXTURE_2D, lmid)
 
-    glBindBuffer(GL_ARRAY_BUFFER,obj.buffers[f].VBO)
+    glBindBuffer(GL_ARRAY_BUFFER, obj.buffers[f].VBO)
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, obj.buffers[f].EBO)
 
     glVertexAttribPointer(0, 3, cGL_FLOAT, false, 7 * sizeof(float32), cast[pointer](0))

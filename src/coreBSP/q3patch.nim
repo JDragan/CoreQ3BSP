@@ -14,7 +14,7 @@ type
     lightmapID*: int32
 
 proc `*`(v1: tBSPVertex, d: float32): tBSPVertex =
-  var temp : tBSPVertex
+  var temp: tBSPVertex
   temp.vPosition[0] = v1.vPosition[0] * d
   temp.vPosition[1] = v1.vPosition[1] * d
   temp.vPosition[2] = v1.vPosition[2] * d
@@ -28,7 +28,7 @@ proc `*`(v1: tBSPVertex, d: float32): tBSPVertex =
   return temp
 
 proc `+`(v1: tBSPVertex, v2: tBSPVertex): tBSPVertex =
-  var temp : tBSPVertex
+  var temp: tBSPVertex
   temp.vPosition[0] = v1.vPosition[0] + v2.vPosition[0];
   temp.vPosition[1] = v1.vPosition[1] + v2.vPosition[1];
   temp.vPosition[2] = v1.vPosition[2] + v2.vPosition[2];
@@ -46,7 +46,7 @@ proc Subdivide*(bezierpatch: BezierPatch): ptr BezierPatch =
   var L = 10
   var L1 = L + 1 # The number of vertices along a side is 1 + num edges
 
-  var bp = bezierpatch.unsafeAddr
+  var bp = bezierpatch.addr
   bp.patchVertices.setLen(L1 * L1)
   # Compute the vertices
 
@@ -58,7 +58,7 @@ proc Subdivide*(bezierpatch: BezierPatch): ptr BezierPatch =
                           bp.controlpoints[3] * (2 * b * a) +
                           bp.controlpoints[6] * (a * a);
 
-    var temp : array[3, tBSPVertex]
+    var temp: array[3, tBSPVertex]
 
     for j in 0..2:
       var k = 3 * j;
@@ -71,7 +71,7 @@ proc Subdivide*(bezierpatch: BezierPatch): ptr BezierPatch =
       var b = 1.0 - a;
 
       bp.patchVertices[i * L1 + j] =
-          temp[0] * (b * b) + temp[1] * (2 * b * a) + temp[2] * (a * a)
+        temp[0] * (b * b) + temp[1] * (2 * b * a) + temp[2] * (a * a)
 
   ## Compute the indices so we can
   ## render them directly with GL_TRIANGLES

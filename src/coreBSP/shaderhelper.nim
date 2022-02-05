@@ -39,14 +39,14 @@ template shaderSource*(shader: GLuint, src: string) =
 template getProgramInfoLog*(program: GLuint): string =
     var logLen: GLint
     glGetProgramiv(program.GLuint, GL_INFO_LOG_LENGTH, addr logLen)
-    var logStr = cast[ptr GLchar](alloc(logLen))
+    var logStr = cast[ptr GLchar](alloc(logLen)).cstring
     glGetProgramInfoLog(program, logLen, logLen.addr, logStr)
     $logStr
 
 template getShaderInfoLog*(shader: GLuint): string =
     var logLen: GLint
     glGetShaderiv(shader.GLuint, GL_INFO_LOG_LENGTH, addr logLen)
-    var logStr = cast[ptr GLchar](alloc(logLen))
+    var logStr = cast[ptr GLchar](alloc(logLen)).cstring
     glGetShaderInfoLog(shader, logLen, logLen.addr, logStr)
     $logStr
 
@@ -114,7 +114,7 @@ template texImage2D[T](target: GLenum, level: int32, internalFormat: GLEnum,
         width: int32, height: int32, format: GLenum, pixelType: GLenum,
         data: openArray[T]) =
     glTexImage2D(target, level.GLint, internalFormat.GLint, width.GLsizei,
-            height.GLsizei, 0, format, pixelType, data[0].unsafeAddr)
+            height.GLsizei, 0, format, pixelType, data[0].addr)
 
 template genBindTexture(target: GLenum): GLuint =
     var tex: GLuint

@@ -1,4 +1,5 @@
 import times, strutils
+export strutils
 
 
 type 
